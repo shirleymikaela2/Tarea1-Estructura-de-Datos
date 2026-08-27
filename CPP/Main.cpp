@@ -1,76 +1,424 @@
 #include <iostream>
+#include <string>
+
 #include "Persona.h"
 #include "Objeto.h"
 #include "CadenaTransmision.h"
 
 using namespace std;
 
-void ejecutarPaso(int numero, string resultado) {
-    cout << "\nPASO " << numero << endl;
-    cout << resultado << endl;
+// CAPACIDAD FIJA = ESTRUCTURA ESTATICA
+const int MAX_PERSONAS = 10;
+const int MAX_OBJETOS = 10;
+
+// ARREGLOS ESTATICOS
+Persona* personas[MAX_PERSONAS] = {nullptr};
+Objeto* objetos[MAX_OBJETOS] = {nullptr};
+
+int cantidadPersonas = 0;
+int cantidadObjetos = 0;
+
+
+// -------------------------------------------------
+// MOSTRAR PERSONAS REGISTRADAS
+// -------------------------------------------------
+void listarPersonas() {
+
+    if (cantidadPersonas == 0) {
+        cout << "\nNo existen personas registradas.\n";
+        return;
+    }
+
+    cout << "\n===== PERSONAS REGISTRADAS =====\n";
+
+    for (int i = 0; i < cantidadPersonas; i++) {
+        cout << i << ". ";
+        personas[i]->mostrarEstado();
+    }
 }
 
-void ejecutarCasoContagio() {
-    cout << "==================================================" << endl;
-    cout << "CASO 1: CADENA DE TRANSMISION COMPLETA" << endl;
-    cout << "==================================================" << endl;
 
-    Persona carlos("Carlos", true);
-    Persona ana("Ana", false);
-    Persona luis("Luis", false);
+// -------------------------------------------------
+// MOSTRAR OBJETOS REGISTRADOS
+// -------------------------------------------------
+void listarObjetos() {
 
-    Objeto teclado("Teclado del computador");
- 
-    CadenaTransmision cadena;
+    if (cantidadObjetos == 0) {
+        cout << "\nNo existen objetos registrados.\n";
+        return;
+    }
 
-    cout << "\nESTADO INICIAL" << endl;
+    cout << "\n===== OBJETOS REGISTRADOS =====\n";
 
-    carlos.mostrarEstado();
-    ana.mostrarEstado();
-    luis.mostrarEstado();
-    teclado.mostrarEstado();
-
-    ejecutarPaso(1, cadena.estornudarSobreObjeto(&carlos, &teclado));
-    ejecutarPaso(2, cadena.tocarObjeto(&ana, &teclado));
-    ejecutarPaso(3, cadena.tenerContacto(&ana, &luis));
-    ejecutarPaso(4, cadena.tocarRostro(&luis));
-
-    cout << "\nESTADO FINAL DEL CASO 1" << endl;
-
-    carlos.mostrarEstado();
-    ana.mostrarEstado();
-    luis.mostrarEstado();
-    teclado.mostrarEstado();
+    for (int i = 0; i < cantidadObjetos; i++) {
+        cout << i << ". ";
+        objetos[i]->mostrarEstado();
+    }
 }
 
-void ejecutarCasoPrevencion() {
-    cout << "\n==================================================" << endl;
-    cout << "CASO 2: INTERRUPCION MEDIANTE LAVADO DE MANOS" << endl;
-    cout << "==================================================" << endl;
 
-    Persona maria("Maria", true);
-    Persona pedro("Pedro", false);
+// -------------------------------------------------
+// REGISTRAR PERSONA
+// -------------------------------------------------
+void registrarPersona() {
 
-    Objeto celular("Telefono celular");
+    if (cantidadPersonas >= MAX_PERSONAS) {
+        cout << "\nEl arreglo de personas esta lleno.\n";
+        return;
+    }
 
-    CadenaTransmision cadena;
+    string nombre;
+    int infectada;
 
-    ejecutarPaso(1, cadena.estornudarSobreObjeto(&maria, &celular));
-    ejecutarPaso(2, cadena.tocarObjeto(&pedro, &celular));
-    ejecutarPaso(3, cadena.lavarManos(&pedro));
-    ejecutarPaso(4, cadena.tocarRostro(&pedro));
-    ejecutarPaso(5, cadena.desinfectarObjeto(&celular));
+    cout << "\n===== REGISTRAR PERSONA =====\n";
 
-    cout << "\nESTADO FINAL DEL CASO 2" << endl;
+    cout << "Nombre: ";
+    cin >> ws;
+    getline(cin, nombre);
 
-    maria.mostrarEstado();
-    pedro.mostrarEstado();
-    celular.mostrarEstado();
+    cout << "Esta infectada? (1 = SI / 0 = NO): ";
+    cin >> infectada;
+
+    // INSTANCIACION DE OBJETO
+    personas[cantidadPersonas] =
+        new Persona(nombre, infectada == 1);
+
+    cantidadPersonas++;
+
+    cout << "\nPersona registrada correctamente.\n";
 }
 
+
+// -------------------------------------------------
+// REGISTRAR OBJETO
+// -------------------------------------------------
+void registrarObjeto() {
+
+    if (cantidadObjetos >= MAX_OBJETOS) {
+        cout << "\nEl arreglo de objetos esta lleno.\n";
+        return;
+    }
+
+    string nombre;
+
+    cout << "\n===== REGISTRAR OBJETO =====\n";
+
+    cout << "Nombre del objeto: ";
+    cin >> ws;
+    getline(cin, nombre);
+
+    // INSTANCIACION DE OBJETO
+    objetos[cantidadObjetos] =
+        new Objeto(nombre);
+
+    cantidadObjetos++;
+
+    cout << "\nObjeto registrado correctamente.\n";
+}
+
+
+// -------------------------------------------------
+// PERSONA INFECTADA CONTAMINA OBJETO
+// -------------------------------------------------
+void estornudarSobreObjeto(CadenaTransmision& cadena) {
+
+    if (cantidadPersonas == 0 || cantidadObjetos == 0) {
+        cout << "\nDebe registrar personas y objetos primero.\n";
+        return;
+    }
+
+    listarPersonas();
+    int persona;
+
+    cout << "\nSeleccione persona: ";
+    cin >> persona;
+
+    listarObjetos();
+    int objeto;
+
+    cout << "\nSeleccione objeto: ";
+    cin >> objeto;
+
+    if (persona < 0 || persona >= cantidadPersonas ||
+        objeto < 0 || objeto >= cantidadObjetos) {
+
+        cout << "\nSeleccion invalida.\n";
+        return;
+    }
+
+    cout << "\n"
+         << cadena.estornudarSobreObjeto(
+                personas[persona],
+                objetos[objeto])
+         << endl;
+}
+
+
+// -------------------------------------------------
+// PERSONA TOCA OBJETO
+// -------------------------------------------------
+void tocarObjeto(CadenaTransmision& cadena) {
+
+    if (cantidadPersonas == 0 || cantidadObjetos == 0) {
+        cout << "\nDebe registrar personas y objetos primero.\n";
+        return;
+    }
+
+    listarPersonas();
+
+    int persona;
+    cout << "\nSeleccione persona: ";
+    cin >> persona;
+
+    listarObjetos();
+
+    int objeto;
+    cout << "\nSeleccione objeto: ";
+    cin >> objeto;
+
+    if (persona < 0 || persona >= cantidadPersonas ||
+        objeto < 0 || objeto >= cantidadObjetos) {
+
+        cout << "\nSeleccion invalida.\n";
+        return;
+    }
+
+    cout << "\n"
+         << cadena.tocarObjeto(
+                personas[persona],
+                objetos[objeto])
+         << endl;
+}
+
+
+// -------------------------------------------------
+// CONTACTO ENTRE PERSONAS
+// -------------------------------------------------
+void tenerContacto(CadenaTransmision& cadena) {
+
+    if (cantidadPersonas < 2) {
+        cout << "\nDebe registrar al menos dos personas.\n";
+        return;
+    }
+
+    listarPersonas();
+
+    int origen;
+    int destino;
+
+    cout << "\nSeleccione persona de origen: ";
+    cin >> origen;
+
+    cout << "Seleccione persona de destino: ";
+    cin >> destino;
+
+    if (origen < 0 || origen >= cantidadPersonas ||
+        destino < 0 || destino >= cantidadPersonas) {
+
+        cout << "\nSeleccion invalida.\n";
+        return;
+    }
+
+    try {
+
+        cout << "\n"
+             << cadena.tenerContacto(
+                    personas[origen],
+                    personas[destino])
+             << endl;
+
+    } catch (const exception& e) {
+
+        cout << "\nError: " << e.what() << endl;
+    }
+}
+
+
+// -------------------------------------------------
+// TOCAR ROSTRO
+// -------------------------------------------------
+void tocarRostro(CadenaTransmision& cadena) {
+
+    if (cantidadPersonas == 0) {
+        cout << "\nNo existen personas registradas.\n";
+        return;
+    }
+
+    listarPersonas();
+
+    int persona;
+
+    cout << "\nSeleccione persona: ";
+    cin >> persona;
+
+    if (persona < 0 || persona >= cantidadPersonas) {
+
+        cout << "\nSeleccion invalida.\n";
+        return;
+    }
+
+    cout << "\n"
+         << cadena.tocarRostro(personas[persona])
+         << endl;
+}
+
+
+// -------------------------------------------------
+// LAVAR MANOS
+// -------------------------------------------------
+void lavarManos(CadenaTransmision& cadena) {
+
+    if (cantidadPersonas == 0) {
+        cout << "\nNo existen personas registradas.\n";
+        return;
+    }
+
+    listarPersonas();
+
+    int persona;
+
+    cout << "\nSeleccione persona: ";
+    cin >> persona;
+
+    if (persona < 0 || persona >= cantidadPersonas) {
+
+        cout << "\nSeleccion invalida.\n";
+        return;
+    }
+
+    cout << "\n"
+         << cadena.lavarManos(personas[persona])
+         << endl;
+}
+
+
+// -------------------------------------------------
+// DESINFECTAR OBJETO
+// -------------------------------------------------
+void desinfectarObjeto(CadenaTransmision& cadena) {
+
+    if (cantidadObjetos == 0) {
+        cout << "\nNo existen objetos registrados.\n";
+        return;
+    }
+
+    listarObjetos();
+
+    int objeto;
+
+    cout << "\nSeleccione objeto: ";
+    cin >> objeto;
+
+    if (objeto < 0 || objeto >= cantidadObjetos) {
+
+        cout << "\nSeleccion invalida.\n";
+        return;
+    }
+
+    cout << "\n"
+         << cadena.desinfectarObjeto(objetos[objeto])
+         << endl;
+}
+
+
+// -------------------------------------------------
+// LIBERAR MEMORIA
+// -------------------------------------------------
+void liberarMemoria() {
+
+    for (int i = 0; i < cantidadPersonas; i++) {
+        delete personas[i];
+    }
+
+    for (int i = 0; i < cantidadObjetos; i++) {
+        delete objetos[i];
+    }
+}
+
+
+// -------------------------------------------------
+// MAIN - MENU POR CONSOLA
+// -------------------------------------------------
 int main() {
-    ejecutarCasoContagio();
-    ejecutarCasoPrevencion();
+
+    CadenaTransmision cadena;
+
+    int opcion;
+
+    do {
+
+        cout << "\n======================================\n";
+        cout << "        TDA CORONAVIRUS\n";
+        cout << "======================================\n";
+        cout << "1. Registrar persona\n";
+        cout << "2. Registrar objeto\n";
+        cout << "3. Listar personas\n";
+        cout << "4. Listar objetos\n";
+        cout << "5. Estornudar sobre objeto\n";
+        cout << "6. Tocar objeto\n";
+        cout << "7. Contacto entre personas\n";
+        cout << "8. Tocar rostro\n";
+        cout << "9. Lavar manos\n";
+        cout << "10. Desinfectar objeto\n";
+        cout << "0. Salir\n";
+        cout << "======================================\n";
+
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+
+            case 1:
+                registrarPersona();
+                break;
+
+            case 2:
+                registrarObjeto();
+                break;
+
+            case 3:
+                listarPersonas();
+                break;
+
+            case 4:
+                listarObjetos();
+                break;
+
+            case 5:
+                estornudarSobreObjeto(cadena);
+                break;
+
+            case 6:
+                tocarObjeto(cadena);
+                break;
+
+            case 7:
+                tenerContacto(cadena);
+                break;
+
+            case 8:
+                tocarRostro(cadena);
+                break;
+
+            case 9:
+                lavarManos(cadena);
+                break;
+
+            case 10:
+                desinfectarObjeto(cadena);
+                break;
+
+            case 0:
+                cout << "\nPrograma finalizado.\n";
+                break;
+
+            default:
+                cout << "\nOpcion invalida.\n";
+        }
+
+    } while (opcion != 0);
+
+    liberarMemoria();
 
     return 0;
 }
